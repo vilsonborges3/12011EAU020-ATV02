@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define LED_DELAY 50000
+#define LED_DELAY 5000
 #define LED_PIN 13
 #define BUTTON_PIN 0
 /* changes to the F103 */
@@ -70,12 +70,11 @@ uint32_t piscaLed(uint32_t, int, bool,int);
 bool button_pressed(uint32_t,int);
 
 static uint32_t led_status;
-static char fw_version[] = {'V', '1', '.', '0'};
+static const char fw_version[] = {'V', '1', '.', '0'};
 
 int main(int argc, char *argv[])
 {
     uint32_t reg;
-    uint32_t i;
     /* Ponteiros para registradores */
     uint32_t *pRCC_APB2ENR  = (uint32_t *)STM32_RCC_APB2ENR;
     uint32_t *pGPIOC_CRL    = (uint32_t *)STM32_GPIOC_CRL;
