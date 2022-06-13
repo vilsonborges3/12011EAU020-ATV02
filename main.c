@@ -92,20 +92,16 @@ int main(int argc, char *argv[])
     reg |= RCC_APB2ENR_IOPAEN;
     *pRCC_APB2ENR = reg;
 
-    reg = *pGPIOC_CRH;
-    reg &= ~GPIO_CNF_MASK(PINO_LED);
-    reg |= (GPIO_CNF_O_GPO_PUSH_PULL << GPIO_CNF_SHIFT(PINO_LED));
-
-    reg &= ~GPIO_MODE_MASK(PINO_LED);
-    reg |= (GPIO_MODE_OUTPUT_10MHZ << GPIO_MODE_SHIFT(PINO_LED));
-
+    /* Configurando PC13 como saida output push-pull */
+    if(LED_PIN < 8) *pGPIOC_CRL = set_GPIO((uint32_t)*pGPIOC_CRL,LED_PIN,GPIO_CNF_O_GPO_PUSH_PULL,GPIO_MODE_OUTPUT_10MHZ); 
+    else *pGPIOC_CRH = set_GPIO((uint32_t)*pGPIOC_CRH,LED_PIN,GPIO_CNF_O_GPO_PUSH_PULL,GPIO_MODE_OUTPUT_10MHZ); 
     if(BUTTON_PIN < 8) *pGPIOA_CRL = set_GPIO((uint32_t)*pGPIOA_CRL,BUTTON_PIN,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT); 
     else *pGPIOA_CRH = set_GPIO((uint32_t)*pGPIOA_CRH,BUTTON_PIN,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT);
 
     bool led_status = false;
     bool pressed;
     int delay = LED_DELAY;
-    
+
     while(1){
     *pGPIOC_BSRR = piscaLed((uint32_t)*pGPIOC_BSRR, LED_PIN, led_status,delay);
     led_status = !led_status;
