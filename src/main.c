@@ -2,17 +2,17 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define LED_DELAY 5000
+#define LED_DELAY 75000
 #define LED_PIN 13
-#define BUTTON_PIN 0
+#define BUTTON 0
 /* changes to the F103 */
 
-#define STM32_RCC_BASE      0x40021000     /* 0x40021000 - 0x400213ff: Reset and Clock control RCC */
+#define STM32_RCC_BASE 0x40021000     /* 0x40021000 - 0x400213ff: Reset and Clock control RCC */
 
 /* AHB2 Base Addresses ******************************************************/
 
-#define STM32_GPIOC_BASE    0x40011000     /* 0x40011000 - 0x400113ff: GPIO Port C */
-#define STM32_GPIOA_BASE    0x40010800      /* 0x40010800 - 0x40010bff: GPIO Port A */
+#define STM32_GPIOC_BASE 0x40011000     /* 0x40011000 - 0x400113ff: GPIO Port C */
+#define STM32_GPIOA_BASE 0x40010800      /* 0x40010800 - 0x40010bff: GPIO Port A */
 
 /* Register Offsets *********************************************************/
 #define STM32_RCC_APB2ENR_OFFSET    0x0018  /* APB2 peripheral clock enable register */
@@ -65,9 +65,9 @@
 #define GPIO_BSRR_RST(n)              (1 << (n + 16))
 /* Functions */
 
-uint32_t set_GPIO(uint32_t, int, int, int);
+uint32_t setGPIO(uint32_t, int, int, int);
 uint32_t piscaLed(uint32_t, int, bool,int);
-bool button_pressed(uint32_t,int);
+bool buttonClick(uint32_t,int);
 
 static uint32_t led_status;
 static const char fw_version[] = {'V', '1', '.', '0'};
@@ -92,22 +92,22 @@ int main(int argc, char *argv[])
     *pRCC_APB2ENR = reg;
 
     /* Configurando PC13 como saida output push-pull */
-    if(LED_PIN < 8) *pGPIOC_CRL = set_GPIO((uint32_t)*pGPIOC_CRL,LED_PIN,GPIO_CNF_O_GPO_PUSH_PULL,GPIO_MODE_OUTPUT_10MHZ); 
-    else *pGPIOC_CRH = set_GPIO((uint32_t)*pGPIOC_CRH,LED_PIN,GPIO_CNF_O_GPO_PUSH_PULL,GPIO_MODE_OUTPUT_10MHZ); 
-    if(BUTTON_PIN < 8) *pGPIOA_CRL = set_GPIO((uint32_t)*pGPIOA_CRL,BUTTON_PIN,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT); 
-    else *pGPIOA_CRH = set_GPIO((uint32_t)*pGPIOA_CRH,BUTTON_PIN,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT);
+    if(LED_PIN < 8) *pGPIOC_CRL = setGPIO((uint32_t)*pGPIOC_CRL,LED_PIN,GPIO_CNF_O_GPO_PUSH_PULL,GPIO_MODE_OUTPUT_10MHZ); 
+    else *pGPIOC_CRH = setGPIO((uint32_t)*pGPIOC_CRH,LED_PIN,GPIO_CNF_O_GPO_PUSH_PULL,GPIO_MODE_OUTPUT_10MHZ); 
+    if(BUTTON < 8) *pGPIOA_CRL = setGPIO((uint32_t)*pGPIOA_CRL,BUTTON,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT); 
+    else *pGPIOA_CRH = setGPIO((uint32_t)*pGPIOA_CRH,BUTTON,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT);
 
     bool led_status = false;
     bool pressed;
     int delay = LED_DELAY;
 
     while(1){
-    *pGPIOC_BSRR = piscaLed((uint32_t)*pGPIOC_BSRR, LED_PIN, led_status,delay);
-    led_status = !led_status;
+        *pGPIOC_BSRR = piscaLed((uint32_t)*pGPIOC_BSRR, LED_PIN, led_status,delay);
+        led_status = !led_status;
 
-    pressed = button_pressed((uint32_t)*pGPIOA_IDR, BUTTON_PIN);
-    if(pressed) delay = LED_DELAY; // rápido
-    else delay = 3*LED_DELAY; // lento
+        pressed = buttonClick((uint32_t)*pGPIOA_IDR, BUTTON);
+        if(pressed) delay = LED_DELAY; 
+        else delay = 3*LED_DELAY; 
     }
 
     
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-uint32_t set_GPIO(uint32_t reg, int led_pin, int cnf, int mode){ 
+uint32_t setGPIO(uint32_t reg, int led_pin, int cnf, int mode){ 
     reg &= ~GPIO_CNF_MASK(led_pin);
     reg |= (cnf << GPIO_CNF_SHIFT(led_pin));
 
@@ -134,7 +134,7 @@ uint32_t piscaLed(uint32_t reg, int led_pin, bool led_status, int delay){
     return reg;
 }
 
-bool button_pressed(uint32_t reg, int b_pin){
+bool buttonClick(uint32_t reg, int b_pin){
     reg &= (1 << b_pin);
     return (reg >= 1);
 }
