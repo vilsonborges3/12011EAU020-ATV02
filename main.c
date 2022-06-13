@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define LED_DELAY 50000
-#define PINO_LED 13
+#define LED_PIN 13
+#define BUTTON_PIN 0
 /* changes to the F103 */
 
 #define STM32_RCC_BASE      0x40021000     /* 0x40021000 - 0x400213ff: Reset and Clock control RCC */
@@ -31,6 +33,8 @@
 #define STM32_GPIOA_IDR                 (STM32_GPIOA_BASE+STM32_GPIO_IDR_OFFSET)
 
 /* APB2 Peripheral Clock enable register (RCC_APB2ENR) */
+#define RCC_APB2ENR_IOPCEN         (1 << 4)    /* Bit 4 IOPCEN: IO port C clock enable */
+
 #define RCC_APB2ENR_IOPAEN         (1 << 2)        /* Bit 2 IOPAEN: IO port A clock enable */
 
 
@@ -98,6 +102,10 @@ int main(int argc, char *argv[])
     if(BUTTON_PIN < 8) *pGPIOA_CRL = set_GPIO((uint32_t)*pGPIOA_CRL,BUTTON_PIN,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT); 
     else *pGPIOA_CRH = set_GPIO((uint32_t)*pGPIOA_CRH,BUTTON_PIN,GPIO_CNF_I_PULL_UP_DOWN,GPIO_MODE_INPUT);
 
+    bool led_status = false;
+    bool pressed;
+    int delay = LED_DELAY;
+    
     while(1){
     *pGPIOC_BSRR = piscaLed((uint32_t)*pGPIOC_BSRR, LED_PIN, led_status,delay);
     led_status = !led_status;
